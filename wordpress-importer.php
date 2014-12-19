@@ -735,8 +735,28 @@ class WP_Import extends WP_Importer {
 
 					if ( $key ) {
 						// export gets meta straight from the DB so could have a serialized string
-						if ( ! $value )
-							$value = maybe_unserialize( $meta['value'] );
+						if ( ! $value ) {
+							if ( is_serialized( $meta['value'] ) ) {
+								$unserialized = unserialize( $meta['value'] );
+								if ( false !== $unserialized ) {
+									$value = $unserialized;
+								} else {
+									// There was an error, try to fix it
+									// common issue is with crlf
+									$count = 0;
+									$serializee = str_replace( array( "\r\n", "\n\r", "\n" ), " \n", $meta['value'], $count );
+									$unserialized = unserialize( $serializee );
+									if ( false !== $unserialized ) {
+										echo "Notice: CRLF newlines corrected when unserializing meta data '{$post_id}', '{$post['post_type']}', '{$key}' [{$count}]\n===============================\n\n";
+										$value = $unserialized;
+									} else {
+										echo "Error: failed unserializing meta data '{$post_id}', '{$post['post_type']}', '{$key}' [{$count}]: '{$meta['value']}'\n===============================\n\n";
+									}
+								}
+							} else {
+								$value = $meta['value'];
+							}
+						}
 
 						add_post_meta( $post_id, $key, $value );
 						do_action( 'import_post_meta', $post_id, $key, $value );

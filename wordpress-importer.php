@@ -502,7 +502,6 @@ class WP_Import extends WP_Importer {
 			}
 			$description = isset( $term['term_description'] ) ? $term['term_description'] : '';
 			$termarr = array( 'slug' => $term['slug'], 'description' => $description, 'parent' => intval($parent) );
-
 			$id = wp_insert_term( $term['term_name'], $term['term_taxonomy'], $termarr );
 			if ( ! is_wp_error( $id ) ) {
 				if ( isset($term['term_id']) )
@@ -1013,10 +1012,11 @@ class WP_Import extends WP_Importer {
 		uksort( $this->url_remap, array(&$this, 'cmpr_strlen') );
 
 		foreach ( $this->url_remap as $from_url => $to_url ) {
+			echo "Remap: $from_url => $to_url\n";
 			// remap urls in post_content
-			$wpdb->query( $wpdb->prepare("UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s)", $from_url, $to_url) );
+			// $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->posts} SET post_content = REPLACE(post_content, %s, %s)", $from_url, $to_url) );
 			// remap enclosure urls
-			$result = $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->postmeta} SET meta_value = REPLACE(meta_value, %s, %s) WHERE meta_key='enclosure'", $from_url, $to_url) );
+			// $result = $wpdb->query( $wpdb->prepare("UPDATE {$wpdb->postmeta} SET meta_value = REPLACE(meta_value, %s, %s) WHERE meta_key='enclosure'", $from_url, $to_url) );
 		}
 	}
 
